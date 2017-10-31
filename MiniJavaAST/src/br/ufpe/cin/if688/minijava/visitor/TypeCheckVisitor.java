@@ -124,25 +124,20 @@ public class TypeCheckVisitor implements IVisitor<Type> {
 		n.i.accept(this);
 		currMethod = symbolTable.getMethod(n.i.s, currClass.getId());
 		Type t = symbolTable.getMethodType(n.i.s, currClass.getId());
-		Type [] formalListTypes = new Type[n.fl.size()];
-		Type [] varDeclList = new Type[n.vl.size()];
-		Type [] statementList = new Type[n.sl.size()];
 		
 		for (int i = 0; i < n.fl.size(); i++) {
-			formalListTypes[i] = n.fl.elementAt(i).accept(this);
+			n.fl.elementAt(i).accept(this);
 			
 		}
 		for (int i = 0; i < n.vl.size(); i++) {
-			varDeclList[i] = n.vl.elementAt(i).accept(this);
+			n.vl.elementAt(i).accept(this);
 		}
 		for (int i = 0; i < n.sl.size(); i++) {
-			 statementList[i] = n.sl.elementAt(i).accept(this);
+			 n.sl.elementAt(i).accept(this);
 		}
 		Type exp = n.e.accept(this);
 		if(!symbolTable.compareTypes(t1, exp)) {
 			System.out.println( "Retorno da expressão incompatível com o tipo definido");
-			
-
 		}
 		currMethod = null;
 		return t;
@@ -360,16 +355,29 @@ public class TypeCheckVisitor implements IVisitor<Type> {
 		return null;
 	}
 
+	// e.find(0);
 	// Exp e;
 	// Identifier i;
 	// ExpList el;
 	public Type visit(Call n) {
 		n.e.accept(this);
-		n.i.accept(this);
-		for (int i = 0; i < n.el.size(); i++) {
-			n.el.elementAt(i).accept(this);
+		Type expType = n.e.accept(this);
+		
+		//****************
+		if(currClass.containsMethod(n.i.toString())) {
+			System.out.println("O identificador não é do tipo da classe" + "(" + currClass.getId() + ")" + " que contém o método: " + n.i.toString());
 		}
-		return null;
+		
+		Type methodType = symbolTable.getMethodType(n.i.s, currClass.getId());
+		
+		for (int i = 0; i < n.el.size(); i++) {
+			Type paramType = n.el.elementAt(i).accept(this);
+			Type methodParamType = currMethod.getParamAt(i).type();
+			if(!(symbolTable.compareTypes(paramType, methodParamType))) {
+				System.out.println("O parâmetro " + (i+1) + " não são equivalentes");
+			}
+		}
+		return methodType;
 	}
 
 	// int i;
@@ -396,13 +404,27 @@ public class TypeCheckVisitor implements IVisitor<Type> {
 
 	// Exp e;
 	public Type visit(NewArray n) {
-		n.e.accept(this);
+		Type expType = n.e.accept(this);
+		if(expType != null) {
+			if(!(expType instanceof IntegerType)) {
+				System.out.println("Em NewArray a expressão que define o tamanho do array: ");
+				n.e.accept(new PrettyPrintVisitor());
+				System.out.println(" não é do tipo Int");
+			}else {
+				return new IntArrayType();
+			}
+		}
 		return null;
 	}
 
 	// Identifier i;
 	public Type visit(NewObject n) {
 		Type idType = n.i.accept(this);
+		if(idType != null) {
+			if(!(symbolTable.containsClass(n.i.toString()))) {
+				System.out.println("Ao fazer NewObject a classe: " + n.i.toString() + " não existe");
+			}else return new IdentifierType(n.i.toString());
+		}
 		return null;
 	}
 

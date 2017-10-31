@@ -262,39 +262,89 @@ public class TypeCheckVisitor implements IVisitor<Type> {
 		Type expType1 = n.e1.accept(this);
 		Type expType2 = n.e2.accept(this);
 		if(expType1 == null | expType2 == null) return null;
-		if(!(expType1 instanceof BooleanType) | !(expType2 instanceof BooleanType)) {
-			System.out.println("Em AND a expressão :");
-			n.accept(new PrettyPrintVisitor());
+		if(!(expType1 instanceof BooleanType)) {
+			System.out.println("Em AND a expressão :" + expType1.toString());
+			n.e1.accept(new PrettyPrintVisitor());
+			System.out.println(" não é booleana");
+		}
+		if(!(expType2 instanceof BooleanType)) {
+			System.out.println("Em AND a expressão :" + expType2.toString());
+			n.e2.accept(new PrettyPrintVisitor());
+			System.out.println(" não é booleana");
 		}
 		return  new BooleanType();
 	}
 
 	// Exp e1,e2;
 	public Type visit(LessThan n) {
-		n.e1.accept(this);
-		n.e2.accept(this);
-		return null;
+		Type expType1 = n.e1.accept(this);
+		Type expType2 = n.e2.accept(this);
+		if(expType1 == null | expType2 == null) return null;
+		if(!(expType1 instanceof IntegerType)) {
+			System.out.println("Em LessThan a expressão: " + expType1.toString());
+			n.e1.accept(new PrettyPrintVisitor());
+			System.out.println(" não é do tipo INT");
+		}
+		if(!(expType2 instanceof IntegerType)) {
+			System.out.println("Em LessThan a expressão: " + expType2.toString());
+			n.e2.accept(new PrettyPrintVisitor());
+			System.out.println(" não é do tipo INT");
+		}
+		return new BooleanType();
 	}
 
 	// Exp e1,e2;
 	public Type visit(Plus n) {
-		n.e1.accept(this);
-		n.e2.accept(this);
-		return null;
+		Type expType1 = n.e1.accept(this);
+		Type expType2 = n.e2.accept(this);
+		if(expType1 == null | expType2 == null) return null;
+		if(!(expType1 instanceof IntegerType)) {
+			System.out.println("Em Plus : " + expType1.toString());
+			n.e1.accept(new PrettyPrintVisitor());
+			System.out.println(" não é do tipo INT");
+		}
+		if(!(expType2 instanceof IntegerType)) {
+			System.out.println("Em Plus a expressão: " + expType2.toString());
+			n.e2.accept(new PrettyPrintVisitor());
+			System.out.println(" não é do tipo INT");
+		}
+		return new IntegerType();
 	}
 
 	// Exp e1,e2;
 	public Type visit(Minus n) {
-		n.e1.accept(this);
-		n.e2.accept(this);
-		return null;
+		Type expType1 = n.e1.accept(this);
+		Type expType2 = n.e2.accept(this);
+		if(expType1 == null | expType2 == null) return null;
+		if(!(expType1 instanceof IntegerType)) {
+			System.out.println("Em Minus : " + expType1.toString());
+			n.e1.accept(new PrettyPrintVisitor());
+			System.out.println(" não é do tipo INT");
+		}
+		if(!(expType2 instanceof IntegerType)) {
+			System.out.println("Em Minus a expressão: " + expType2.toString());
+			n.e2.accept(new PrettyPrintVisitor());
+			System.out.println(" não é do tipo INT");
+		}
+		return new IntegerType();
 	}
 
 	// Exp e1,e2;
 	public Type visit(Times n) {
-		n.e1.accept(this);
-		n.e2.accept(this);
-		return null;
+		Type expType1 = n.e1.accept(this);
+		Type expType2 = n.e2.accept(this);
+		if(expType1 == null | expType2 == null) return null;
+		if(!(expType1 instanceof IntegerType)) {
+			System.out.println("Em Times : " + expType1.toString());
+			n.e1.accept(new PrettyPrintVisitor());
+			System.out.println(" não é do tipo INT");
+		}
+		if(!(expType2 instanceof IntegerType)) {
+			System.out.println("Em Times a expressão: " + expType2.toString());
+			n.e2.accept(new PrettyPrintVisitor());
+			System.out.println(" não é do tipo INT");
+		}
+		return new IntegerType();
 	}
 
 	// Exp e1,e2;

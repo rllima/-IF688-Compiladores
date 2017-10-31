@@ -68,13 +68,14 @@ public class BuildSymbolTableVisitor implements IVisitor<Void> {
 	public Void visit(MainClass n) {
 		if(!symbolTable.addClass(n.i1.toString(), null)) {
 			System.out.println("A classe com o nome: " + n.i1.toString() + " já foi definida");
+		}else {
+			currClass = symbolTable.getClass(n.i1.toString());
+			currClass.addMethod("main", null);
+			n.i1.accept(this);
+			n.i2.accept(this);
+			n.s.accept(this);
+			currClass = null;
 		}
-		currClass = symbolTable.getClass(n.i1.toString());
-		currClass.addMethod("main", null);
-		n.i1.accept(this);
-		n.i2.accept(this);
-		n.s.accept(this);
-		currClass = null;
 		return null;
 	
 	}
@@ -83,17 +84,21 @@ public class BuildSymbolTableVisitor implements IVisitor<Void> {
 	// VarDeclList vl;
 	// MethodDeclList ml;
 	public Void visit(ClassDeclSimple n) {
-		symbolTable.addClass(n.i.toString(), null);
-		currClass = symbolTable.getClass(n.i.toString());
-		n.i.accept(this);
+		if(!symbolTable.addClass(n.i.toString(), null)) {
+			System.out.println("A classe com o nome: " + n.i.toString() + " já foi definida");
+		}else {
+			currClass = symbolTable.getClass(n.i.toString());
+			n.i.accept(this);
+			
+			for (int i = 0; i < n.vl.size(); i++) {
+				n.vl.elementAt(i).accept(this);
+			}
+			for (int i = 0; i < n.ml.size(); i++) {
+				n.ml.elementAt(i).accept(this);
+			}
+			currClass = null;
+		}
 		
-		for (int i = 0; i < n.vl.size(); i++) {
-			n.vl.elementAt(i).accept(this);
-		}
-		for (int i = 0; i < n.ml.size(); i++) {
-			n.ml.elementAt(i).accept(this);
-		}
-		currClass = null;
 		return null;
 	}
 
@@ -102,39 +107,50 @@ public class BuildSymbolTableVisitor implements IVisitor<Void> {
 	// VarDeclList vl;
 	// MethodDeclList ml;
 	public Void visit(ClassDeclExtends n) {
-		symbolTable.addClass(n.i.toString(), n.j.toString());
-		currClass = symbolTable.getClass(n.i.toString());
-		n.i.accept(this);
-		n.j.accept(this);
-		
-		for (int i = 0; i < n.vl.size(); i++) {
-			n.vl.elementAt(i).accept(this);
+		if(!symbolTable.addClass(n.i.toString(), n.j.toString())) {
+			System.out.println("A classe com o nome: " + n.i.toString() + " já foi definida");
+		}else {
+			currClass = symbolTable.getClass(n.i.toString());
+			n.i.accept(this);
+			n.j.accept(this);
+			
+			for (int i = 0; i < n.vl.size(); i++) {
+				n.vl.elementAt(i).accept(this);
+			}
+			for (int i = 0; i < n.ml.size(); i++) {
+				n.ml.elementAt(i).accept(this);
+			}
+			currClass = null;
 		}
-		for (int i = 0; i < n.ml.size(); i++) {
-			n.ml.elementAt(i).accept(this);
-		}
-		currClass = null;
 		return null;
 	}
 
 	// Type t;
 	// Identifier i;
 	public Void visit(VarDecl n) {
-		n.t.accept(this);
-		n.i.accept(this);
+		boolean flag = false;
 		if(currClass != null){
 			if(currMethod != null){
 				if(currMethod.containsVar(n.i.toString())){
 					System.out.println("A variável: " + n.i.toString() + " já está declarada no método!");	
-				}else currMethod.addVar(n.i.toString(), n.t);
+				}else {
+					currMethod.addVar(n.i.toString(), n.t);
+					flag = true;
+				}
 			}else{
 				if(currClass.containsVar(n.i.toString())){
 					System.out.println("A variável: " + n.i.toString() + " já está declarada na classe!");			
-				}else currClass.addVar(n.i.toString(), n.t);
+				}else {
+					currClass.addVar(n.i.toString(), n.t);
+					flag = true;
+				}
 				
 			}
+			if(flag) {
+				n.t.accept(this);
+				n.i.accept(this);
+			}
 		}
-		
 		return null;
 	}
 
@@ -145,33 +161,37 @@ public class BuildSymbolTableVisitor implements IVisitor<Void> {
 	// StatementList sl;
 	// Exp e;
 	public Void visit(MethodDecl n) {
-		currClass.addMethod(n.i.toString(), n.t);
-		currMethod = currClass.getMethod(n.i.toString());
-		n.t.accept(this);
-		n.i.accept(this);
-		for (int i = 0; i < n.fl.size(); i++) {
-			n.fl.elementAt(i).accept(this);
+		if(!currClass.addMethod(n.i.toString(), n.t)) {
+			System.out.println("O método com o nome: " + n.i.toString() + " já foi definido");
+		}else {
+			currMethod = currClass.getMethod(n.i.toString());
+			n.t.accept(this);
+			n.i.accept(this);
+			for (int i = 0; i < n.fl.size(); i++) {
+				n.fl.elementAt(i).accept(this);
+			}
+			for (int i = 0; i < n.vl.size(); i++) {
+				n.vl.elementAt(i).accept(this);
+			}
+			for (int i = 0; i < n.sl.size(); i++) {
+				n.sl.elementAt(i).accept(this);
+			}
+			n.e.accept(this);
+			currMethod = null;
 		}
-		for (int i = 0; i < n.vl.size(); i++) {
-			n.vl.elementAt(i).accept(this);
-		}
-		for (int i = 0; i < n.sl.size(); i++) {
-			n.sl.elementAt(i).accept(this);
-		}
-		n.e.accept(this);
-		currMethod = null;
 		return null;
 	}
 
 	// Type t;
 	// Identifier i;
 	public Void visit(Formal n) {
-		n.t.accept(this);
-		n.i.accept(this);
-		
 		if(currMethod.containsParam(n.i.toString())){
 			System.out.println("A variável: " + n.i.toString() + " já foi passada como parametro do método!");		
-		}else currMethod.addParam(n.i.toString(), n.t);
+		}else {
+			currMethod.addParam(n.i.toString(), n.t);
+			n.t.accept(this);
+			n.i.accept(this);
+		}
 		
 		return null;
 	}

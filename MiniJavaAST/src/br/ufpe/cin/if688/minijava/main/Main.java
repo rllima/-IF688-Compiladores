@@ -33,7 +33,7 @@ public class Main {
 		));
 		vdl1.addElement(new VarDecl(
 				new IntegerType(),
-				new Identifier("num")
+				new Identifier("flag")
 		));
 		
 		MethodDeclList mdl = new MethodDeclList();

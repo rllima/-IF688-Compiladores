@@ -1,6 +1,7 @@
 package br.ufpe.cin.if688.minijava.visitor;
 
 import br.ufpe.cin.if688.minijava.ast.And;
+import br.ufpe.cin.if688.minijava.symboltable.Class;
 import br.ufpe.cin.if688.minijava.ast.ArrayAssign;
 import br.ufpe.cin.if688.minijava.ast.ArrayLength;
 import br.ufpe.cin.if688.minijava.ast.ArrayLookup;
@@ -35,11 +36,15 @@ import br.ufpe.cin.if688.minijava.ast.True;
 import br.ufpe.cin.if688.minijava.ast.Type;
 import br.ufpe.cin.if688.minijava.ast.VarDecl;
 import br.ufpe.cin.if688.minijava.ast.While;
+import br.ufpe.cin.if688.minijava.symboltable.Method;
 import br.ufpe.cin.if688.minijava.symboltable.SymbolTable;
 
 public class TypeCheckVisitor implements IVisitor<Type> {
 
 	private SymbolTable symbolTable;
+	private Class currClass;
+	private Method currMethod;
+	
 
 	TypeCheckVisitor(SymbolTable st) {
 		symbolTable = st;
@@ -58,9 +63,11 @@ public class TypeCheckVisitor implements IVisitor<Type> {
 	// Identifier i1,i2;
 	// Statement s;
 	public Type visit(MainClass n) {
+		currClass = symbolTable.getClass(n.i1.toString());
 		n.i1.accept(this);
 		n.i2.accept(this);
 		n.s.accept(this);
+		currClass = null;
 		return null;
 	}
 
@@ -68,6 +75,7 @@ public class TypeCheckVisitor implements IVisitor<Type> {
 	// VarDeclList vl;
 	// MethodDeclList ml;
 	public Type visit(ClassDeclSimple n) {
+		currClass = symbolTable.getClass(n.i.toString());
 		n.i.accept(this);
 		for (int i = 0; i < n.vl.size(); i++) {
 			n.vl.elementAt(i).accept(this);
@@ -75,6 +83,7 @@ public class TypeCheckVisitor implements IVisitor<Type> {
 		for (int i = 0; i < n.ml.size(); i++) {
 			n.ml.elementAt(i).accept(this);
 		}
+		currClass = null;
 		return null;
 	}
 
@@ -83,6 +92,7 @@ public class TypeCheckVisitor implements IVisitor<Type> {
 	// VarDeclList vl;
 	// MethodDeclList ml;
 	public Type visit(ClassDeclExtends n) {
+		currClass = symbolTable.getClass(n.i.toString());
 		n.i.accept(this);
 		n.j.accept(this);
 		for (int i = 0; i < n.vl.size(); i++) {
@@ -91,6 +101,7 @@ public class TypeCheckVisitor implements IVisitor<Type> {
 		for (int i = 0; i < n.ml.size(); i++) {
 			n.ml.elementAt(i).accept(this);
 		}
+		currClass = null;
 		return null;
 	}
 
@@ -99,7 +110,7 @@ public class TypeCheckVisitor implements IVisitor<Type> {
 	public Type visit(VarDecl n) {
 		n.t.accept(this);
 		n.i.accept(this);
-		return null;
+		return n.t;
 	}
 
 	// Type t;
@@ -109,19 +120,32 @@ public class TypeCheckVisitor implements IVisitor<Type> {
 	// StatementList sl;
 	// Exp e;
 	public Type visit(MethodDecl n) {
-		n.t.accept(this);
+		Type t1 = n.t.accept(this);
 		n.i.accept(this);
+		currMethod = symbolTable.getMethod(n.i.s, currClass.getId());
+		Type t = symbolTable.getMethodType(n.i.s, currClass.getId());
+		Type [] formalListTypes = new Type[n.fl.size()];
+		Type [] varDeclList = new Type[n.vl.size()];
+		Type [] statementList = new Type[n.sl.size()];
+		
 		for (int i = 0; i < n.fl.size(); i++) {
-			n.fl.elementAt(i).accept(this);
+			formalListTypes[i] = n.fl.elementAt(i).accept(this);
+			
 		}
 		for (int i = 0; i < n.vl.size(); i++) {
-			n.vl.elementAt(i).accept(this);
+			varDeclList[i] = n.vl.elementAt(i).accept(this);
 		}
 		for (int i = 0; i < n.sl.size(); i++) {
-			n.sl.elementAt(i).accept(this);
+			 statementList[i] = n.sl.elementAt(i).accept(this);
 		}
-		n.e.accept(this);
-		return null;
+		Type exp = n.e.accept(this);
+		if(!symbolTable.compareTypes(t1, exp)) {
+			System.out.println( "Retorno da expressão incompatível com o tipo definido");
+			
+
+		}
+		currMethod = null;
+		return t;
 	}
 
 	// Type t;

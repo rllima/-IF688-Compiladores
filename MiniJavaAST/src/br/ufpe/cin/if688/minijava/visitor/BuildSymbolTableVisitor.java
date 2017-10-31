@@ -72,7 +72,6 @@ public class BuildSymbolTableVisitor implements IVisitor<Void> {
 		n.i1.accept(this);
 		n.i2.accept(this);
 		n.s.accept(this);
-		
 		currClass = null;
 		return null;
 	

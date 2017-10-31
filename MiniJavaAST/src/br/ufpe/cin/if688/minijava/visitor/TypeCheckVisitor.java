@@ -157,20 +157,20 @@ public class TypeCheckVisitor implements IVisitor<Type> {
 	}
 
 	public Type visit(IntArrayType n) {
-		return null;
+		return new IntArrayType();
 	}
 
 	public Type visit(BooleanType n) {
-		return null;
+		return new BooleanType();
 	}
 
 	public Type visit(IntegerType n) {
-		return null;
+		return new IntegerType();
 	}
 
 	// String s;
 	public Type visit(IdentifierType n) {
-		return null;
+		return new IdentifierType(n.s);
 	}
 
 	// StatementList sl;
@@ -324,24 +324,24 @@ public class TypeCheckVisitor implements IVisitor<Type> {
 
 	// int i;
 	public Type visit(IntegerLiteral n) {
-		return null;
+		return new IntegerType();
 	}
 
 	public Type visit(True n) {
-		return null;
+		return new BooleanType();
 	}
 
 	public Type visit(False n) {
-		return null;
+		return new BooleanType();
 	}
 
 	// String s;
 	public Type visit(IdentifierExp n) {
-		return null;
+		return symbolTable.getVarType(currMethod, currClass, n.s);
 	}
 
 	public Type visit(This n) {
-		return null;
+		return currClass.type();
 	}
 
 	// Exp e;
@@ -352,6 +352,7 @@ public class TypeCheckVisitor implements IVisitor<Type> {
 
 	// Identifier i;
 	public Type visit(NewObject n) {
+		Type idType = n.i.accept(this);
 		return null;
 	}
 

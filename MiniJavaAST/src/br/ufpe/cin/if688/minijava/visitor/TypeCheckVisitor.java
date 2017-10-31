@@ -316,12 +316,21 @@ public class TypeCheckVisitor implements IVisitor<Type> {
 
 	// Exp e;
 	public Type visit(Not n) {
-		n.e.accept(this);
+		Type expType = n.e.accept(this);
+		
+		if(expType != null) {
+			if(!(expType instanceof BooleanType)) {
+				System.out.println("Em Not a expressão: ");
+				n.e.accept(new PrettyPrintVisitor());
+				System.out.println(" não é do tipo Boolean");
+			}else return new BooleanType();
+		}
+		
 		return null;
 	}
 
 	// String s;
 	public Type visit(Identifier n) {
-		return null;
+		return symbolTable.getVarType(currMethod, currClass, n.toString());
 	}
 }

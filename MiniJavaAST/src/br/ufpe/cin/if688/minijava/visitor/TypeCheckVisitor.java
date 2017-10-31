@@ -184,7 +184,14 @@ public class TypeCheckVisitor implements IVisitor<Type> {
 	// Exp e;
 	// Statement s1,s2;
 	public Type visit(If n) {
-		n.e.accept(this);
+		Type expType = n.e.accept(this);
+		if(expType == null) {
+			return null;
+		}
+		if(!(expType instanceof BooleanType)) {
+			System.out.println("A expressão não é um tipo booleano");
+		}
+	
 		n.s1.accept(this);
 		n.s2.accept(this);
 		return null;
@@ -193,39 +200,73 @@ public class TypeCheckVisitor implements IVisitor<Type> {
 	// Exp e;
 	// Statement s;
 	public Type visit(While n) {
-		n.e.accept(this);
+		Type expType = n.e.accept(this);
+		if(expType == null) return null;
+		if(!(expType instanceof BooleanType)) {
+			System.out.println("A expressão não é um tipo booleano");
+		}
 		n.s.accept(this);
 		return null;
 	}
 
 	// Exp e;
 	public Type visit(Print n) {
-		n.e.accept(this);
+		Type expType = n.e.accept(this);
+		if(expType == null) return null;
+		if(expType instanceof Type) {
+			System.out.println("No PRINT: " + n.e.toString() + " não é um tipo");
+			
+		}
 		return null;
 	}
 
 	// Identifier i;
 	// Exp e;
 	public Type visit(Assign n) {
-		n.i.accept(this);
-		n.e.accept(this);
+		Type idType = n.i.accept(this);
+		Type expType = n.e.accept(this);
+		if(idType == null) {
+			return null;
+		}
+		if(expType == null) {
+			return null;
+		}
+		if(!symbolTable.compareTypes(idType, expType)) {
+			System.out.println("Em assign, o tipo do identificador " + n.i.toString() + " e da expressão " + n.e.toString());
+			n.accept(new PrettyPrintVisitor());
+			System.out.println("não são do mesmo tipo");
+		}
+		
 		return null;
 	}
 
 	// Identifier i;
 	// Exp e1,e2;
 	public Type visit(ArrayAssign n) {
-		n.i.accept(this);
-		n.e1.accept(this);
-		n.e2.accept(this);
+		Type idType = n.i.accept(this);
+		Type expType1 = n.e1.accept(this);
+		Type expType2 = n.e2.accept(this);
+		if(idType == null | expType1 == null | expType2 == null) {
+			return null;
+		}
+		if(!(expType1 instanceof IntegerType)) {
+			System.out.println(" Em ArrayAssign ");
+			n.accept(new PrettyPrintVisitor());
+			System.out.println(n.e1.toString() + " não é do tipo INT");
+		}
 		return null;
 	}
 
 	// Exp e1,e2;
 	public Type visit(And n) {
-		n.e1.accept(this);
-		n.e2.accept(this);
-		return null;
+		Type expType1 = n.e1.accept(this);
+		Type expType2 = n.e2.accept(this);
+		if(expType1 == null | expType2 == null) return null;
+		if(!(expType1 instanceof BooleanType) | !(expType2 instanceof BooleanType)) {
+			System.out.println("Em AND a expressão :");
+			n.accept(new PrettyPrintVisitor());
+		}
+		return  new BooleanType();
 	}
 
 	// Exp e1,e2;

@@ -65,14 +65,7 @@ public class TypeCheckVisitor implements IVisitor<Type> {
 	// Statement s;
 	public Type visit(MainClass n) {
 		currClass = symbolTable.getClass(n.i1.s);
-		
-		/*MethodDecl m = new MethodDecl(null, new Identifier(currMethod.getId()), new FormalList(), new VarDeclList(), new StatementList(), null);
-		
-			Variable v = (Variable) currMethod.getParam(n.i2.toString());
-			m.fl.addElement(new Formal(v.type(), new Identifier(v.id())));*/
-		
 		n.i1.accept(this);
-		
 		
 		this.currMethod = symbolTable.getMethod("main", this.currClass.getId());
 		this.fromVar = true;
@@ -452,17 +445,18 @@ public class TypeCheckVisitor implements IVisitor<Type> {
 		
 		if(n.el.size() != sizeMethodParams) {
 			System.out.println("Quantidade de parâmetros não são equivalentes");
-		}
-		
-		for (int i = 0; i < n.el.size(); i++) {
-			Type paramType = n.el.elementAt(i).accept(this);
-			Type methodParamType = method.getParamAt(i).type();
-			
-			if(!(symbolTable.compareTypes(paramType, methodParamType))) {
-				System.out.println("No parâmetro " + (i+1) + " o tipo esperado era " + getTypeName(methodParamType) 
+		}else {
+			for (int i = 0; i < n.el.size(); i++) {
+				Type paramType = n.el.elementAt(i).accept(this);
+				Type methodParamType = method.getParamAt(i).type();
+				
+				if(!(symbolTable.compareTypes(paramType, methodParamType))) {
+					System.out.println("No parâmetro " + (i+1) + " o tipo esperado era " + getTypeName(methodParamType) 
 					+ " e o recebido foi " + getTypeName(paramType));
+				}
 			}
 		}
+		
 		return methodType;
 	}
 
@@ -483,7 +477,11 @@ public class TypeCheckVisitor implements IVisitor<Type> {
 	public Type visit(IdentifierExp n) {
 		Type t = symbolTable.getVarType(currMethod, currClass, n.s);
 		if(t == null) {
-			System.out.println("variável " + n.s + " não existe");
+			try {
+				int j = Integer.parseInt(n.s);
+			}catch(NumberFormatException e) {
+				System.out.println("Expressão " + n.s + " não pode");
+			}
 		}
 		return t;
 	}
@@ -512,12 +510,7 @@ public class TypeCheckVisitor implements IVisitor<Type> {
 		Type idType = n.i.accept(this);
 		currMethod = aux;
 		
-		if(idType != null) {
-			if(!(symbolTable.containsClass(n.i.toString()))) {
-				System.out.println("Ao fazer NewObject a classe: " + n.i.toString() + " não existe");
-			}else return new IdentifierType(n.i.toString());
-		}
-		return null;
+		return idType;
 	}
 
 	// Exp e;

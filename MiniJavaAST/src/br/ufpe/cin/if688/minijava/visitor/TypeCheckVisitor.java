@@ -13,7 +13,6 @@ import br.ufpe.cin.if688.minijava.ast.ClassDeclExtends;
 import br.ufpe.cin.if688.minijava.ast.ClassDeclSimple;
 import br.ufpe.cin.if688.minijava.ast.False;
 import br.ufpe.cin.if688.minijava.ast.Formal;
-import br.ufpe.cin.if688.minijava.ast.FormalList;
 import br.ufpe.cin.if688.minijava.ast.Identifier;
 import br.ufpe.cin.if688.minijava.ast.IdentifierExp;
 import br.ufpe.cin.if688.minijava.ast.IdentifierType;
@@ -31,17 +30,14 @@ import br.ufpe.cin.if688.minijava.ast.Not;
 import br.ufpe.cin.if688.minijava.ast.Plus;
 import br.ufpe.cin.if688.minijava.ast.Print;
 import br.ufpe.cin.if688.minijava.ast.Program;
-import br.ufpe.cin.if688.minijava.ast.StatementList;
 import br.ufpe.cin.if688.minijava.ast.This;
 import br.ufpe.cin.if688.minijava.ast.Times;
 import br.ufpe.cin.if688.minijava.ast.True;
 import br.ufpe.cin.if688.minijava.ast.Type;
 import br.ufpe.cin.if688.minijava.ast.VarDecl;
-import br.ufpe.cin.if688.minijava.ast.VarDeclList;
 import br.ufpe.cin.if688.minijava.ast.While;
 import br.ufpe.cin.if688.minijava.symboltable.Method;
 import br.ufpe.cin.if688.minijava.symboltable.SymbolTable;
-import br.ufpe.cin.if688.minijava.symboltable.Variable;
 
 public class TypeCheckVisitor implements IVisitor<Type> {
 

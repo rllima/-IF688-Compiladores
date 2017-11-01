@@ -148,8 +148,10 @@ public class BuildSymbolTableVisitor implements IVisitor<Void> {
 				}
 				
 			}
-			n.t.accept(this);
-			n.i.accept(this);
+			if(flag) {
+				n.t.accept(this);
+				n.i.accept(this);
+			}
 		}
 		return null;
 	}

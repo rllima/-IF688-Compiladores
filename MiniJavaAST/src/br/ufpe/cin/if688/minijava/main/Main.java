@@ -16,6 +16,7 @@ import br.ufpe.cin.if688.minijava.ast.VarDecl;
 import br.ufpe.cin.if688.minijava.ast.VarDeclList;
 import br.ufpe.cin.if688.minijava.visitor.BuildSymbolTableVisitor;
 import br.ufpe.cin.if688.minijava.visitor.PrettyPrintVisitor;
+import br.ufpe.cin.if688.minijava.visitor.TypeCheckVisitor;
 
 public class Main {
 
@@ -33,7 +34,7 @@ public class Main {
 		));
 		vdl1.addElement(new VarDecl(
 				new IntegerType(),
-				new Identifier("flag")
+				new Identifier("num")
 		));
 		
 		MethodDeclList mdl = new MethodDeclList();
@@ -43,13 +44,13 @@ public class Main {
 		);
 		
 		ClassDeclExtends B = new ClassDeclExtends(
-				new Identifier("B"), new Identifier("A"), 
+				new Identifier("B"), new Identifier("C"), 
 				new VarDeclList(), new MethodDeclList()
 		);
 		
 		VarDeclList vdl2 = new VarDeclList();
 		vdl2.addElement(new VarDecl(
-				new IdentifierType("A"),
+				new IdentifierType("B"),
 				new Identifier("obj")
 		));
 		ClassDeclSimple C = new ClassDeclSimple(
@@ -66,6 +67,8 @@ public class Main {
 		PrettyPrintVisitor ppv = new PrettyPrintVisitor();
 		BuildSymbolTableVisitor bs = new BuildSymbolTableVisitor();
 		bs.visit(p);
+		TypeCheckVisitor tc = new TypeCheckVisitor(bs.getSymbolTable());
+		tc.visit(p);
 		//ppv.visit(p);
 	}
 }

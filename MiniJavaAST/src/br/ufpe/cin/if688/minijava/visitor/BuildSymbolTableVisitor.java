@@ -66,16 +66,15 @@ public class BuildSymbolTableVisitor implements IVisitor<Void> {
 	// Identifier i1,i2;
 	// Statement s;
 	public Void visit(MainClass n) {
-		if(!symbolTable.addClass(n.i1.toString(), null)) {
-			System.out.println("A classe com o nome: " + n.i1.toString() + " já foi definida");
-		}else {
-			currClass = symbolTable.getClass(n.i1.toString());
-			currClass.addMethod("main", null);
-			n.i1.accept(this);
-			n.i2.accept(this);
-			n.s.accept(this);
-			currClass = null;
-		}
+		symbolTable.addClass(n.i1.toString(), null);
+		currClass = symbolTable.getClass(n.i1.toString());
+		
+		
+		n.i1.accept(this);
+		n.i2.accept(this);
+		n.s.accept(this);
+		currClass = null;
+			
 		return null;
 	
 	}

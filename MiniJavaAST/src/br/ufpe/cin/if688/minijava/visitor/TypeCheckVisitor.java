@@ -65,7 +65,6 @@ public class TypeCheckVisitor implements IVisitor<Type> {
 	// Statement s;
 	public Type visit(MainClass n) {
 		currClass = symbolTable.getClass(n.i1.s);
-		this.currMethod = symbolTable.getMethod("main", this.currClass.getId());
 		
 		/*MethodDecl m = new MethodDecl(null, new Identifier(currMethod.getId()), new FormalList(), new VarDeclList(), new StatementList(), null);
 		
@@ -73,12 +72,16 @@ public class TypeCheckVisitor implements IVisitor<Type> {
 			m.fl.addElement(new Formal(v.type(), new Identifier(v.id())));*/
 		
 		n.i1.accept(this);
-		//m.accept(this);
+		
+		
+		this.currMethod = symbolTable.getMethod("main", this.currClass.getId());
 		this.fromVar = true;
 		n.i2.accept(this);
 		this.fromVar = false;
-		n.s.accept(this);
 		currMethod = null;
+		
+		n.s.accept(this);
+		
 		currClass = null;
 		return null;
 	}
@@ -134,9 +137,10 @@ public class TypeCheckVisitor implements IVisitor<Type> {
 	// StatementList sl;
 	// Exp e;
 	public Type visit(MethodDecl n) {
+		currMethod = symbolTable.getMethod(n.i.s, currClass.getId());
 		Type t1 = n.t.accept(this);
 		n.i.accept(this);
-		currMethod = symbolTable.getMethod(n.i.s, currClass.getId());
+		
 		Type t = symbolTable.getMethodType(n.i.s, currClass.getId());
 		
 		for (int i = 0; i < n.fl.size(); i++) {
@@ -148,9 +152,14 @@ public class TypeCheckVisitor implements IVisitor<Type> {
 		for (int i = 0; i < n.sl.size(); i++) {
 			 n.sl.elementAt(i).accept(this);
 		}
-		Type exp = n.e.accept(this);
-		if(!symbolTable.compareTypes(t1, exp)) {
-			System.out.println( "Retorno da expressão incompatível com o tipo definido");
+		Type expType = n.e.accept(this);
+		if(!symbolTable.compareTypes(t1, expType)) {
+			System.out.print( "Retorno da expressão incompatível com o tipo definido, ");
+			System.out.print("recibido ");
+			expType.accept(new PrettyPrintVisitor());
+			System.out.print(", mas esperado ");
+			t1.accept(new PrettyPrintVisitor());
+			System.out.println();
 		}
 		currMethod = null;
 		return t;
@@ -240,7 +249,9 @@ public class TypeCheckVisitor implements IVisitor<Type> {
 	// Identifier i;
 	// Exp e;
 	public Type visit(Assign n) {
+		this.fromVar = true;
 		Type idType = n.i.accept(this);
+		this.fromVar = false;
 		Type expType = n.e.accept(this);
 		if(idType == null) {
 			return null;
@@ -260,7 +271,9 @@ public class TypeCheckVisitor implements IVisitor<Type> {
 	// Identifier i;
 	// Exp e1,e2;
 	public Type visit(ArrayAssign n) {
+		this.fromVar = true;
 		Type idType = n.i.accept(this);
+		this.fromVar = false;
 		Type expType1 = n.e1.accept(this);
 		Type expType2 = n.e2.accept(this);
 		if(idType == null | expType1 == null | expType2 == null) {
@@ -399,23 +412,27 @@ public class TypeCheckVisitor implements IVisitor<Type> {
 	public Type visit(ArrayLength n) {
 		Type expType = n.e.accept(this);
 		if(expType != null) {
-			if(!(expType instanceof IntegerType)) {
+			if(!(expType instanceof IntArrayType)) {
 				System.out.print("A expressão ");
 				n.e.accept(new PrettyPrintVisitor());
-				System.out.println(" em ArrayLength não é um int");
+				System.out.println(" em ArrayLength não é do tipo IntArray");
 			}else return new IntegerType();
 		}
 		return null;
 	}
 
-	// e.find(0);
+	// this.m().g()
 	// Exp e;
 	// Identifier i;
 	// ExpList el;
 	public Type visit(Call n) {
-		n.e.accept(this);
 		Type expType = n.e.accept(this);
-		String className = ((IdentifierType)expType).s;
+		String className = "";
+		if(expType instanceof IdentifierType) {
+			className = ((IdentifierType)expType).s;
+		}else {
+			System.out.println("");
+		}
 		
 		if(symbolTable.getMethod(n.i.toString(), className) == null) {
 			System.out.print("Erro na expressão: ");
@@ -423,8 +440,19 @@ public class TypeCheckVisitor implements IVisitor<Type> {
 			System.out.println(", que é do tipo da classe" + className + " a qual não contém o método: " + n.i.toString());
 		}
 		
-		Type methodType = symbolTable.getMethodType(n.i.toString(), className);
+		Type methodType = symbolTable.getMethod(n.i.toString(), className).type();
 		Method method = symbolTable.getMethod(n.i.toString(), className);
+		
+		int sizeMethodParams = 0;
+		
+		while(true) {
+			if(method.getParamAt(sizeMethodParams) != null) sizeMethodParams++;
+			else break;
+		}
+		
+		if(n.el.size() != sizeMethodParams) {
+			System.out.println("Quantidade de parâmetros não são equivalentes");
+		}
 		
 		for (int i = 0; i < n.el.size(); i++) {
 			Type paramType = n.el.elementAt(i).accept(this);
@@ -479,7 +507,11 @@ public class TypeCheckVisitor implements IVisitor<Type> {
 
 	// Identifier i;
 	public Type visit(NewObject n) {
+		Method aux = currMethod;
+		currMethod = null;
 		Type idType = n.i.accept(this);
+		currMethod = aux;
+		
 		if(idType != null) {
 			if(!(symbolTable.containsClass(n.i.toString()))) {
 				System.out.println("Ao fazer NewObject a classe: " + n.i.toString() + " não existe");
@@ -506,12 +538,21 @@ public class TypeCheckVisitor implements IVisitor<Type> {
 	// String s;
 	public Type visit(Identifier n) {
 		if(this.fromVar) {
-			symbolTable.getVarType(currMethod, currClass, n.toString());
+			return symbolTable.getVarType(currMethod, currClass, n.toString());
 		}
-		else { 
-			if(!symbolTable.containsClass(n.toString())) {
-				System.out.println("Símbolo " + n.toString() + " não pode ser encontrado");
-				return null;
+		else {
+			if(currClass != null) {
+				if(currMethod == null) {
+					if(!symbolTable.containsClass(n.toString())) {
+						System.out.println("Símbolo " + n.toString() + " não pode ser encontrado");
+						return null;
+					}
+				}else {
+					if(!symbolTable.getClass(currClass.getId()).containsMethod(n.toString())) {
+						System.out.println("Símbolo " + n.toString() + " não pode ser encontrado");
+						return null;
+					}
+				}
 			}
 		}
 		return new IdentifierType(n.toString());

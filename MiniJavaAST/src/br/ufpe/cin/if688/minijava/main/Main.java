@@ -37,6 +37,7 @@ public class Main {
 				new Identifier("num")
 		));
 		
+		
 		MethodDeclList mdl = new MethodDeclList();
 		
 		ClassDeclSimple A = new ClassDeclSimple(
@@ -50,7 +51,7 @@ public class Main {
 		
 		VarDeclList vdl2 = new VarDeclList();
 		vdl2.addElement(new VarDecl(
-				new IdentifierType("B"),
+				new IdentifierType("D"),
 				new Identifier("obj")
 		));
 		ClassDeclSimple C = new ClassDeclSimple(
@@ -70,5 +71,6 @@ public class Main {
 		TypeCheckVisitor tc = new TypeCheckVisitor(bs.getSymbolTable());
 		tc.visit(p);
 		ppv.visit(p);
+		
 	}
 }

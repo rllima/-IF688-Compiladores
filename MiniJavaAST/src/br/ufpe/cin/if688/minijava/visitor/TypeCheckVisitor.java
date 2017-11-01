@@ -13,6 +13,7 @@ import br.ufpe.cin.if688.minijava.ast.ClassDeclExtends;
 import br.ufpe.cin.if688.minijava.ast.ClassDeclSimple;
 import br.ufpe.cin.if688.minijava.ast.False;
 import br.ufpe.cin.if688.minijava.ast.Formal;
+import br.ufpe.cin.if688.minijava.ast.FormalList;
 import br.ufpe.cin.if688.minijava.ast.Identifier;
 import br.ufpe.cin.if688.minijava.ast.IdentifierExp;
 import br.ufpe.cin.if688.minijava.ast.IdentifierType;
@@ -30,14 +31,17 @@ import br.ufpe.cin.if688.minijava.ast.Not;
 import br.ufpe.cin.if688.minijava.ast.Plus;
 import br.ufpe.cin.if688.minijava.ast.Print;
 import br.ufpe.cin.if688.minijava.ast.Program;
+import br.ufpe.cin.if688.minijava.ast.StatementList;
 import br.ufpe.cin.if688.minijava.ast.This;
 import br.ufpe.cin.if688.minijava.ast.Times;
 import br.ufpe.cin.if688.minijava.ast.True;
 import br.ufpe.cin.if688.minijava.ast.Type;
 import br.ufpe.cin.if688.minijava.ast.VarDecl;
+import br.ufpe.cin.if688.minijava.ast.VarDeclList;
 import br.ufpe.cin.if688.minijava.ast.While;
 import br.ufpe.cin.if688.minijava.symboltable.Method;
 import br.ufpe.cin.if688.minijava.symboltable.SymbolTable;
+import br.ufpe.cin.if688.minijava.symboltable.Variable;
 
 public class TypeCheckVisitor implements IVisitor<Type> {
 
@@ -65,9 +69,20 @@ public class TypeCheckVisitor implements IVisitor<Type> {
 	// Statement s;
 	public Type visit(MainClass n) {
 		currClass = symbolTable.getClass(n.i1.s);
+		this.currMethod = symbolTable.getMethod("main", this.currClass.getId());
+		
+		/*MethodDecl m = new MethodDecl(null, new Identifier(currMethod.getId()), new FormalList(), new VarDeclList(), new StatementList(), null);
+		
+			Variable v = (Variable) currMethod.getParam(n.i2.toString());
+			m.fl.addElement(new Formal(v.type(), new Identifier(v.id())));*/
+		
 		n.i1.accept(this);
-		//n.i2.accept(this);
+		//m.accept(this);
+		this.fromVar = true;
+		n.i2.accept(this);
+		this.fromVar = false;
 		n.s.accept(this);
+		currMethod = null;
 		currClass = null;
 		return null;
 	}
@@ -109,8 +124,8 @@ public class TypeCheckVisitor implements IVisitor<Type> {
 	// Type t;
 	// Identifier i;
 	public Type visit(VarDecl n) {
-		this.fromVar  = true;
 		n.t.accept(this);
+		this.fromVar  = true;
 		n.i.accept(this);
 		this.fromVar  = false;
 		return n.t;
@@ -442,7 +457,11 @@ public class TypeCheckVisitor implements IVisitor<Type> {
 
 	// String s;
 	public Type visit(IdentifierExp n) {
-		return symbolTable.getVarType(currMethod, currClass, n.s);
+		Type t = symbolTable.getVarType(currMethod, currClass, n.s);
+		if(t == null) {
+			System.out.println("variável " + n.s + " não existe");
+		}
+		return t;
 	}
 
 	public Type visit(This n) {
@@ -493,9 +512,11 @@ public class TypeCheckVisitor implements IVisitor<Type> {
 		if(this.fromVar) {
 			symbolTable.getVarType(currMethod, currClass, n.toString());
 		}
-		else if(!symbolTable.containsClass(n.toString())) {
-			System.out.println("Símbolo " + n.toString() + " não pode ser encontrado");
-			return null;
+		else { 
+			if(!symbolTable.containsClass(n.toString())) {
+				System.out.println("Símbolo " + n.toString() + " não pode ser encontrado");
+				return null;
+			}
 		}
 		return new IdentifierType(n.toString());
 	}

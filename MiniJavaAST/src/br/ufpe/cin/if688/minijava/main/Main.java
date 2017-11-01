@@ -69,6 +69,6 @@ public class Main {
 		bs.visit(p);
 		TypeCheckVisitor tc = new TypeCheckVisitor(bs.getSymbolTable());
 		tc.visit(p);
-		//ppv.visit(p);
+		ppv.visit(p);
 	}
 }

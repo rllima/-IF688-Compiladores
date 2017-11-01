@@ -68,11 +68,14 @@ public class BuildSymbolTableVisitor implements IVisitor<Void> {
 	public Void visit(MainClass n) {
 		symbolTable.addClass(n.i1.toString(), null);
 		currClass = symbolTable.getClass(n.i1.toString());
-		
+		currClass.addMethod("main", null);
+		this.currMethod = currClass.getMethod("main");
+		this.currMethod.addParam(n.i2.toString(), new IntArrayType());
 		
 		n.i1.accept(this);
 		n.i2.accept(this);
 		n.s.accept(this);
+		currMethod = null;
 		currClass = null;
 			
 		return null;
@@ -145,10 +148,8 @@ public class BuildSymbolTableVisitor implements IVisitor<Void> {
 				}
 				
 			}
-			if(flag) {
-				n.t.accept(this);
-				n.i.accept(this);
-			}
+			n.t.accept(this);
+			n.i.accept(this);
 		}
 		return null;
 	}

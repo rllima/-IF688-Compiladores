@@ -30,6 +30,7 @@ import br.ufpe.cin.if688.minijava.ast.Not;
 import br.ufpe.cin.if688.minijava.ast.Plus;
 import br.ufpe.cin.if688.minijava.ast.Print;
 import br.ufpe.cin.if688.minijava.ast.Program;
+import br.ufpe.cin.if688.minijava.ast.Statement;
 import br.ufpe.cin.if688.minijava.ast.This;
 import br.ufpe.cin.if688.minijava.ast.Times;
 import br.ufpe.cin.if688.minijava.ast.True;
@@ -142,10 +143,16 @@ public class TypeCheckVisitor implements IVisitor<Type> {
 			n.vl.elementAt(i).accept(this);
 		}
 		for (int i = 0; i < n.sl.size(); i++) {
-			n.sl.elementAt(i).accept(this);
+			Statement s = n.sl.elementAt(i);
+			s.accept(this);
+		}
+		if(n.e instanceof Identifier) {
+			this.fromVar = true;
 		}
 		Type expType = n.e.accept(this);
-		if (!symbolTable.compareTypes(t1, expType)) {
+		this.fromVar = false;
+		
+		if (!symbolTable.compareTypes(t1, expType) && expType != null && t1 != null) {
 			System.out.print("Retorno da expressão incompatível com o tipo definido, ");
 			System.out.print("recibido ");
 			expType.accept(new PrettyPrintVisitor());
@@ -160,8 +167,8 @@ public class TypeCheckVisitor implements IVisitor<Type> {
 	// Type t;
 	// Identifier i;
 	public Type visit(Formal n) {
-		this.fromVar = true;
 		n.t.accept(this);
+		this.fromVar = true;
 		n.i.accept(this);
 		this.fromVar = false;
 		return null;
@@ -200,14 +207,19 @@ public class TypeCheckVisitor implements IVisitor<Type> {
 	// Exp e;
 	// Statement s1,s2;
 	public Type visit(If n) {
+		if(n.e instanceof Identifier) {
+			this.fromVar = true;
+		}
 		Type expType = n.e.accept(this);
+		this.fromVar = false;
+		
 		if (expType == null) {
 			return null;
 		}
 		if (!(expType instanceof BooleanType)) {
 			System.out.println("A expressão não é um tipo booleano");
 		}
-
+		
 		n.s1.accept(this);
 		n.s2.accept(this);
 		return null;
@@ -216,7 +228,11 @@ public class TypeCheckVisitor implements IVisitor<Type> {
 	// Exp e;
 	// Statement s;
 	public Type visit(While n) {
+		if(n.e instanceof Identifier) {
+			this.fromVar = true;
+		}
 		Type expType = n.e.accept(this);
+		this.fromVar = false;
 		if (expType == null)
 			return null;
 		if (!(expType instanceof BooleanType)) {
@@ -228,7 +244,12 @@ public class TypeCheckVisitor implements IVisitor<Type> {
 
 	// Exp e;
 	public Type visit(Print n) {
+		if(n.e instanceof Identifier) {
+			this.fromVar = true;
+		}
 		Type expType = n.e.accept(this);
+		this.fromVar = false;
+		
 		if (expType == null)
 			return null;
 		if (!(expType instanceof Type)) {
@@ -246,7 +267,11 @@ public class TypeCheckVisitor implements IVisitor<Type> {
 		this.fromVar = true;
 		Type idType = n.i.accept(this);
 		this.fromVar = false;
+		if(n.e instanceof Identifier) {
+			this.fromVar = true;
+		}
 		Type expType = n.e.accept(this);
+		this.fromVar = false;
 		if (idType == null) {
 			return null;
 		}
@@ -268,8 +293,16 @@ public class TypeCheckVisitor implements IVisitor<Type> {
 		this.fromVar = true;
 		Type idType = n.i.accept(this);
 		this.fromVar = false;
+		if(n.e1 instanceof Identifier) {
+			this.fromVar = true;
+		}
 		Type expType1 = n.e1.accept(this);
+		this.fromVar = false;
+		if(n.e2 instanceof Identifier) {
+			this.fromVar = true;
+		}
 		Type expType2 = n.e2.accept(this);
+		this.fromVar = false;
 		if (idType == null | expType1 == null | expType2 == null) {
 			return null;
 		}
@@ -291,8 +324,16 @@ public class TypeCheckVisitor implements IVisitor<Type> {
 
 	// Exp e1,e2;
 	public Type visit(And n) {
+		if(n.e1 instanceof Identifier) {
+			this.fromVar = true;
+		}
 		Type expType1 = n.e1.accept(this);
+		this.fromVar = false;
+		if(n.e2 instanceof Identifier) {
+			this.fromVar = true;
+		}
 		Type expType2 = n.e2.accept(this);
+		this.fromVar = false;
 		if (expType1 == null | expType2 == null)
 			return null;
 		if (!(expType1 instanceof BooleanType)) {
@@ -310,8 +351,16 @@ public class TypeCheckVisitor implements IVisitor<Type> {
 
 	// Exp e1,e2;
 	public Type visit(LessThan n) {
+		if(n.e1 instanceof Identifier) {
+			this.fromVar = true;
+		}
 		Type expType1 = n.e1.accept(this);
+		this.fromVar = false;
+		if(n.e2 instanceof Identifier) {
+			this.fromVar = true;
+		}
 		Type expType2 = n.e2.accept(this);
+		this.fromVar = false;
 		if (expType1 == null | expType2 == null)
 			return null;
 		if (!(expType1 instanceof IntegerType)) {
@@ -329,8 +378,16 @@ public class TypeCheckVisitor implements IVisitor<Type> {
 
 	// Exp e1,e2;
 	public Type visit(Plus n) {
+		if(n.e1 instanceof Identifier) {
+			this.fromVar = true;
+		}
 		Type expType1 = n.e1.accept(this);
+		this.fromVar = false;
+		if(n.e2 instanceof Identifier) {
+			this.fromVar = true;
+		}
 		Type expType2 = n.e2.accept(this);
+		this.fromVar = false;
 		if (expType1 == null | expType2 == null)
 			return null;
 		if (!(expType1 instanceof IntegerType)) {
@@ -348,8 +405,17 @@ public class TypeCheckVisitor implements IVisitor<Type> {
 
 	// Exp e1,e2;
 	public Type visit(Minus n) {
+		if(n.e1 instanceof Identifier) {
+			this.fromVar = true;
+		}
 		Type expType1 = n.e1.accept(this);
+		this.fromVar = false;
+		if(n.e2 instanceof Identifier) {
+			this.fromVar = true;
+		}
 		Type expType2 = n.e2.accept(this);
+		this.fromVar = false;
+		
 		if (expType1 == null | expType2 == null)
 			return null;
 		if (!(expType1 instanceof IntegerType)) {
@@ -367,8 +433,16 @@ public class TypeCheckVisitor implements IVisitor<Type> {
 
 	// Exp e1,e2;
 	public Type visit(Times n) {
+		if(n.e1 instanceof Identifier) {
+			this.fromVar = true;
+		}
 		Type expType1 = n.e1.accept(this);
+		this.fromVar = false;
+		if(n.e2 instanceof Identifier) {
+			this.fromVar = true;
+		}
 		Type expType2 = n.e2.accept(this);
+		this.fromVar = false;
 		if (expType1 == null | expType2 == null)
 			return null;
 		if (!(expType1 instanceof IntegerType)) {
@@ -386,8 +460,16 @@ public class TypeCheckVisitor implements IVisitor<Type> {
 
 	// Exp e1,e2;
 	public Type visit(ArrayLookup n) {
+		if(n.e1 instanceof Identifier) {
+			this.fromVar = true;
+		}
 		Type exp1Type = n.e1.accept(this);
+		this.fromVar = false;
+		if(n.e2 instanceof Identifier) {
+			this.fromVar = true;
+		}
 		Type exp2Type = n.e2.accept(this);
+		this.fromVar = false;
 
 		if (exp1Type != null && exp2Type != null) {
 			if (!(exp1Type instanceof IntArrayType)) {
@@ -409,7 +491,12 @@ public class TypeCheckVisitor implements IVisitor<Type> {
 
 	// Exp e;
 	public Type visit(ArrayLength n) {
+		if(n.e instanceof Identifier) {
+			this.fromVar = true;
+		}
 		Type expType = n.e.accept(this);
+		this.fromVar = false;
+		
 		if (expType != null) {
 			if (!(expType instanceof IntArrayType)) {
 				System.out.print("A expressão ");
@@ -426,7 +513,12 @@ public class TypeCheckVisitor implements IVisitor<Type> {
 	// Identifier i;
 	// ExpList el;
 	public Type visit(Call n) {
+		if(n.e instanceof Identifier) {
+			this.fromVar = true;
+		}
 		Type expType = n.e.accept(this);
+		this.fromVar = false;
+		
 		String className = "";
 		if (expType instanceof IdentifierType) {
 			className = ((IdentifierType) expType).s;
@@ -456,7 +548,9 @@ public class TypeCheckVisitor implements IVisitor<Type> {
 				System.out.println("Quantidade de parâmetros não são equivalentes");
 			} else {
 				for (int i = 0; i < n.el.size(); i++) {
+					fromVar = true;
 					Type paramType = n.el.elementAt(i).accept(this);
+					fromVar = false;
 					Type methodParamType = method.getParamAt(i).type();
 					
 					if (!(symbolTable.compareTypes(paramType, methodParamType))) {
@@ -500,7 +594,12 @@ public class TypeCheckVisitor implements IVisitor<Type> {
 
 	// Exp e;
 	public Type visit(NewArray n) {
+		if(n.e instanceof Identifier) {
+			this.fromVar = true;
+		}
 		Type expType = n.e.accept(this);
+		this.fromVar = false;
+		
 		if (expType != null) {
 			if (!(expType instanceof IntegerType)) {
 				System.out.print("Em NewArray a expressão que define o tamanho do array: ");
@@ -524,7 +623,11 @@ public class TypeCheckVisitor implements IVisitor<Type> {
 
 	// Exp e;
 	public Type visit(Not n) {
+		if(n.e instanceof Identifier) {
+			this.fromVar = true;
+		}
 		Type expType = n.e.accept(this);
+		this.fromVar = false;
 
 		if (expType != null) {
 			if (!(expType instanceof BooleanType)) {

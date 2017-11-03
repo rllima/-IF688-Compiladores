@@ -559,7 +559,7 @@ public class TypeCheckVisitor implements IVisitor<Type> {
 							return null;
 						}
 					}
-					if (!symbolTable.getClass(currClass.getId()).containsMethod(n.toString())) {
+					else if (!symbolTable.getClass(currClass.getId()).containsMethod(n.toString())) {
 						System.out.println("Símbolo " + n.toString() + " não pode ser encontrado");
 						return null;
 					}

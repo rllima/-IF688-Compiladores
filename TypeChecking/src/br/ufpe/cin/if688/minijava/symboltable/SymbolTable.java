@@ -59,8 +59,8 @@ public class SymbolTable {
 			}
 		}
 
-		System.out.println("Variavel " + id + " nao definida no escopo atual");
-		System.exit(0);
+		/*System.out.println("Variavel " + id + " nao definida no escopo atual");
+		System.exit(0);*/
 		return null;
 	}
 
@@ -83,10 +83,10 @@ public class SymbolTable {
 			}
 		}
 
-		System.out.println("Metodo " + id + " nao definido na classe "
+		/*System.out.println("Metodo " + id + " nao definido na classe "
 				+ classScope);
 
-		System.exit(0);
+		System.exit(0);*/
 		return null;
 	}
 
